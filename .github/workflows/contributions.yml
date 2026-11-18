@@ -1,4 +1,4 @@
-# Redraws the dithered contribution graph once a day and publishes it to the `output` branch,
+# Redraws the dithered green contribution graph once a day and publishes it to the `output` branch,
 # which holds a single commit that is replaced on every run, so `main` history stays clean.
 name: contribution graph
 
