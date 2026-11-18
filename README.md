@@ -14,3 +14,7 @@
 <a href="https://github.com/enam4/KBsearch"><img alt="KBsearch" src="assets/cards/KBsearch.png" width="49%"></a>
 <a href="https://github.com/enam4/iweb"><img alt="iweb" src="assets/cards/iweb.png" width="49%"></a>
 <a href="https://github.com/enam4/FileTree"><img alt="FileTree" src="assets/cards/FileTree.png" width="49%"></a>
+
+## ░ activity
+
+<img alt="contribution graph" src="https://raw.githubusercontent.com/enam4/enam4/output/contributions.png" width="100%">

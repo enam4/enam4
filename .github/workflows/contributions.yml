@@ -1,0 +1,36 @@
+# Redraws the dithered contribution graph once a day and publishes it to the `output` branch,
+# which holds a single commit that is replaced on every run, so `main` history stays clean.
+name: contribution graph
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [make_contrib.py, .github/workflows/contributions.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --quiet numpy pillow matplotlib
+      - run: python make_contrib.py enam4 contributions.png
+      - name: Publish to the output branch
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir out && mv contributions.png out/ && cd out
+          git init -q -b output
+          git config user.name "enam4"
+          git config user.email "161091216+enam4@users.noreply.github.com"
+          git add contributions.png
+          git commit -q -m "Contribution graph $(date -u +%F)"
+          git push -q -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" output
