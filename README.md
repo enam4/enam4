@@ -1,7 +1,5 @@
 <img alt="enam4" src="assets/header.png">
 
-<sub>░▒▓ small cpu-only interpretability experiments on qwen2.5, plus tools and agent skills · one dither palette per project · <a href="https://erastnam.com/">erastnam.com</a> ▓▒░</sub>
-
 ## ░ interpretability experiments
 
 Five small experiments on Qwen2.5 (0.5B and 1.5B), each run end to end on a CPU, with controls, raw outputs and the code to rebuild every chart.
@@ -35,7 +33,3 @@ Five small experiments on Qwen2.5 (0.5B and 1.5B), each run end to end on a CPU,
 <a href="https://github.com/enam4/KBsearch"><img alt="KBsearch" src="assets/cards/KBsearch.png" width="49%"></a>
 <a href="https://github.com/enam4/iweb"><img alt="iweb" src="assets/cards/iweb.png" width="49%"></a>
 <a href="https://github.com/enam4/FileTree"><img alt="FileTree" src="assets/cards/FileTree.png" width="49%"></a>
-
-## ░ how the visuals are made
-
-Every chart and card is a matplotlib figure drawn without anti-aliasing, then dithered with an 8×8 Bayer matrix in its project's palette. Categories differ by dither density and direct labels rather than by hue. In each experiment repo the style lives in `figstyle.py` and `make_figures.py` rebuilds every chart from the committed results. Here, `make_header.py` and `make_cards.py` build the header and the tool cards.

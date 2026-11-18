@@ -1,22 +1,20 @@
-"""Builds assets/header.png: a procedurally painted dusk landscape, ordered-dithered into a small
-colour ramp, with the name set on top.
+"""Builds assets/header.png: a procedurally painted dusk landscape with the name set on top.
 
-The scene is computed as a single brightness field (0 = darkest, 1 = brightest). Each pixel is then
-dithered between the two nearest colours of RAMP with an 8x8 Bayer matrix, so every gradient in
-the sky, haze and water turns into a dither pattern."""
+The scene is computed as a single brightness field (0 = darkest, 1 = brightest), then dithered the
+same way as the project charts and cards: two tones (near-black and one ink colour), an 8x8 Bayer
+matrix and 4 px cells. Brightness becomes the density of ink."""
 import os
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import matplotlib
 
 W, H = 1600, 520
-CELL = 3                       # dither cell in px
+CELL = 4                       # dither cell in px, same as the project charts
 SEED = 4
 NAME = "enam4"
 
-# dusk ramp, darkest to brightest
-RAMP = ["#06050d", "#120c24", "#24143f", "#3d1d5c", "#652a74", "#94357a", "#c74a74",
-        "#ee6f63", "#ff9b5e", "#ffc77a", "#fff0c4"]
+# two tones, like every project palette: background and ink
+RAMP = ["#0b0b0e", "#ece6d6"]
 
 rng = np.random.default_rng(SEED)
 y, x = np.mgrid[0:H, 0:W].astype(float)
@@ -43,14 +41,15 @@ HORIZON = 0.66                 # where the far haze meets the lake
 SUN = (0.70, 0.40, 0.115)      # centre x, centre y, radius (y and r as fractions of H)
 
 # ---------------------------------------------------------------- sky
-v = 0.06 + 0.62 * np.clip(Y / HORIZON, 0, 1) ** 1.8
+v = 0.48 * np.clip(Y / HORIZON, 0, 1) ** 2.6
 dx, dy = (X - SUN[0]) * W / H, Y - SUN[1]
 d = np.sqrt(dx ** 2 + dy ** 2)
-v += 0.42 * np.exp(-d / 0.20) + 0.18 * np.exp(-d / 0.55)
+v += 0.45 * np.exp(-d / 0.17) + 0.12 * np.exp(-d / 0.45)
 
 # stars in the upper sky, away from the glow
-stars = (rng.random((H, W)) < 0.0016) & (Y < 0.38) & (d > 0.35)
-v = np.where(stars, np.maximum(v, 0.55 + 0.35 * rng.random((H, W))), v)
+star_cells = rng.random((H // CELL + 1, W // CELL + 1)) < 0.006
+stars = star_cells[(y // CELL).astype(int), (x // CELL).astype(int)] & (Y < 0.36) & (d > 0.35)
+v = np.where(stars, 1.0, v)
 
 # sun disc, cut by thin cloud bands
 v = np.where(d < SUN[2], 0.99, v)
@@ -75,10 +74,10 @@ def ridged(n, octaves=8, persistence=0.52, base=3):
 
 
 layers = [  # base height, amplitude, roughness, brightness, haze
-    (0.62, 0.30, 0.50, 0.52, 0.14),
-    (0.66, 0.28, 0.54, 0.40, 0.14),
-    (0.71, 0.26, 0.56, 0.30, 0.12),
-    (0.77, 0.20, 0.58, 0.15, 0.08),
+    (0.62, 0.30, 0.50, 0.60, 0.06),
+    (0.66, 0.28, 0.54, 0.42, 0.06),
+    (0.71, 0.26, 0.56, 0.26, 0.05),
+    (0.77, 0.20, 0.58, 0.11, 0.04),
 ]
 for base, amp, rough, bright, haze in layers:
     notch = 1 - 0.85 * np.exp(-((X[0] - SUN[0]) / 0.10) ** 2)   # a valley for the sun to set into
@@ -87,7 +86,8 @@ for base, amp, rough, bright, haze in layers:
     depth = np.clip((Y - ridge[None, :]) / 0.12, 0, 1)
     shade = bright + haze * (1 - depth)                     # lit ridgeline, darker below
     rim = np.exp(-np.abs(X - SUN[0]) / 0.18) * np.exp(-((Y - ridge[None, :]) * H / 3.0) ** 2)
-    v = np.where(below, shade + 0.18 * rim, v)
+    edge = np.exp(-((Y - ridge[None, :]) * H / 2.2) ** 2)   # thin lit ridgeline so each range reads
+    v = np.where(below, shade + 0.30 * rim + 0.30 * edge, v)
     v += 0.10 * haze * np.exp(-((Y - (base + 0.02)) / 0.012) ** 2) * ~below   # valley mist
 
 # ---------------------------------------------------------------- lake with a broken reflection
@@ -115,8 +115,11 @@ for px, ph in trees:
     half = pw * t * saw
     trunk = (np.abs(X - px) * W / H < 0.004) & (t > 0.85)
     fg |= ((np.abs(X - px) * W / H < half) & (Y > top) & (t < 0.9)) | trunk
-v = np.where(fg, 0.015, v)
+v += 0.30 * np.exp(-((Y - 0.86) / 0.035) ** 2) * (0.6 + 0.4 * np.sin(X * 7) ** 2)   # shoreline mist
+v = np.where(fg, 0.0, v)
 v = np.clip(v, 0, 1)
+# tone curve for two tones: shadows drop to pure background, only the light carries ink
+v = np.clip((v - 0.05) / 0.95, 0, 1) ** 1.15
 
 # ---------------------------------------------------------------- dither into the ramp
 BAYER = np.array([[0, 32, 8, 40, 2, 34, 10, 42], [48, 16, 56, 24, 50, 18, 58, 26],
@@ -135,7 +138,8 @@ font_path = os.path.join(matplotlib.get_data_path(), "fonts", "ttf", "DejaVuSans
 font = ImageFont.truetype(font_path, 124)
 draw = ImageDraw.Draw(img)
 tx, ty = 92, 60
-draw.text((tx + 8, ty + 8), NAME, font=font, fill=RAMP[1])  # hard shadow
+l, t, r, b = draw.textbbox((tx, ty), NAME, font=font)
+draw.rectangle((l - 28, t - 24, r + 28, b + 24), fill=RAMP[0], outline=RAMP[-1], width=3)
 draw.text((tx, ty), NAME, font=font, fill=RAMP[-1])
 pal = Image.new("P", (1, 1))
 pal.putpalette([c for row in cols.tolist() for c in row] + [0] * (768 - 3 * len(RAMP)))
