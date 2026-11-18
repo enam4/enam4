@@ -7,6 +7,9 @@
 <a href="https://github.com/enam4/qwen-glitch-tokens"><img alt="qwen-glitch-tokens" src="https://raw.githubusercontent.com/enam4/qwen-glitch-tokens/main/assets/banner.png" width="49%"></a>
 <a href="https://github.com/enam4/persona-mixing-steering"><img alt="persona-mixing-steering" src="https://raw.githubusercontent.com/enam4/persona-mixing-steering/main/assets/banner.png" width="49%"></a>
 <a href="https://github.com/enam4/emergent-misalignment-small-scale"><img alt="emergent-misalignment-small-scale" src="https://raw.githubusercontent.com/enam4/emergent-misalignment-small-scale/main/assets/banner.png" width="49%"></a>
+<a href="https://github.com/enam4/agent-injection-range"><img alt="agent-injection-range" src="https://raw.githubusercontent.com/enam4/agent-injection-range/main/assets/banner.png" width="49%"></a>
+<a href="https://github.com/enam4/jailbreak-decay-tracker"><img alt="jailbreak-decay-tracker" src="https://raw.githubusercontent.com/enam4/jailbreak-decay-tracker/main/assets/banner.png" width="49%"></a>
+<a href="https://github.com/enam4/refusal-direction"><img alt="refusal-direction" src="https://raw.githubusercontent.com/enam4/refusal-direction/main/assets/banner.png" width="49%"></a>
 
 ## ░ tools
 
